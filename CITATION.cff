@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+title: "Spindrift: speed-invariant federated bearing fault diagnosis"
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - given-names: Joseph
+    family-names: "Disamalu"
+    affiliation: "Department of Mechatronic Engineering, School of Engineering, Dedan Kimathi University of Technology"
+  - given-names: Morris Kimathi
+    family-names: "Mwangi"
+    affiliation: "Department of Mechatronic Engineering, School of Engineering, Dedan Kimathi University of Technology"
+  - given-names: Samuel Macharia
+    family-names: "Kang'iri"
+    affiliation: "Department of Mechatronic Engineering, School of Engineering, Dedan Kimathi University of Technology"
+    orcid: "https://orcid.org/0000-0002-7326-7502"
+repository-code: "https://github.com/SiliconWit/speed-invariant-bearing-diagnosis"
+license: MIT
+keywords:
+  - federated learning
+  - bearing fault diagnosis
+  - speed invariance
+  - envelope analysis
+  - reproducible research

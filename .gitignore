@@ -1,0 +1,25 @@
+# Data: downloaded by data/fetch_data.py, never committed
+data/*
+!data/fetch_data.py
+!data/MANIFEST.md
+
+# Generated output
+results/*
+!results/.gitkeep
+
+# Local path overrides
+code/local_paths.py
+
+# Paper sources are kept outside this repository
+paper/
+
+# Python and environments
+__pycache__/
+*.pyc
+.venv/
+.env
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store

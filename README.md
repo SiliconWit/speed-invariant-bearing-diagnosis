@@ -30,6 +30,8 @@ python3 data/fetch_data.py
 cd code
 OMP_NUM_THREADS=1 python3 run_jnu.py        # federated grid on JNU, 90 runs
 OMP_NUM_THREADS=1 python3 run_sim.py        # simulated speed sweep
+OMP_NUM_THREADS=1 python3 run_sim.py --seeds 10 --ball-orders 4.86 4.90 4.94 4.98 5.02
+                                            # seed spread and ball order sensitivity
 OMP_NUM_THREADS=1 python3 run_controls.py   # shift identity and architecture control
 OMP_NUM_THREADS=1 python3 run_arch.py       # architecture control with the order-tracking baseline
 python3 analyse.py
@@ -38,15 +40,19 @@ python3 make_figs.py
 ```
 
 On an eight-core CPU the federated grid takes a few hours, the architecture runs most of
-a day, and the simulated sweep about half an hour. Features are extracted from the
+a day, and the simulated sweep about half an hour. The seed and ball order sweep repeats
+the simulated sweep for each ball defect order with ten training seeds and takes a few
+hours; `--nproc` sets the number of worker processes. When its output
+`results/sim_ball_order.json` is present, the analysis adds the seed spread to the
+numbers and writes `ball_order_table.tex`. Features are extracted from the
 recordings on first use and cached in `data/cache`. `build_numbers.py` reads the recorded
 shaft speeds from the CWRU files, so it also needs the data.
 
 ## Outputs
 
 Everything is written to `results/`: one JSON file per experiment, `summary.json`,
-`numbers.tex` (every reported value as a LaTeX macro), `jnu_table.tex` and the figures in
-`results/figs/`. The environment variables `DATA_DIR`, `RESULTS_DIR` and `PUBLISH_DIR`
+`numbers.tex` (every reported value as a LaTeX macro), `jnu_table.tex`,
+`ball_order_table.tex` (when that sweep has been run) and the figures in `results/figs/`. The environment variables `DATA_DIR`, `RESULTS_DIR` and `PUBLISH_DIR`
 change these locations (see `code/paths.py`).
 
 ## Layout

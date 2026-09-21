@@ -168,6 +168,44 @@ cmd("SimLogAccMidLo", pct(min(_mid)))
 cmd("SimLogAccMidHi", pct(max(_mid)))
 cmd("SimLogMaboveOne", sum(1 for r, m in zip(_sl["rhos"], _sl["M"]) if r > 1.0 and m > 1.0))
 cmd("SimLogNRatios", sum(1 for r in _sl["rhos"] if r > 1.0))
+cmd("SimNSeeds", S["sim_by_front_rho"][f"lfes|{_sl['rhos'][0]}"]["n"])
+
+# --- simulated sweep over training seeds and ball defect orders (optional) --------
+B = S.get("sim_ball_order")
+if B:
+    _bo = sorted({float(k.split("|")[0]) for k in B})
+    _g = f"{F.ORDERS['ball']:.2f}"
+    for fe, tag in (("lfes", "Log"), ("ses", "Lin")):
+        s = B[f"{_g}|{fe}"]
+        cmd(f"SimSeed{tag}Spearman", f"{s['spearman_M_acc']:.2f}")
+        cmd(f"SimSeed{tag}SpearmanMean", f"{s['spearman_seed_mean']:.2f}")
+        cmd(f"SimSeed{tag}SpearmanSd", f"{s['spearman_seed_sd']:.2f}")
+        cmd(f"SimSeed{tag}SpearmanMin", f"{s['spearman_seed_min']:.2f}")
+        cmd(f"SimSeed{tag}SpearmanMax", f"{s['spearman_seed_max']:.2f}")
+        cmd(f"SimSeed{tag}AccMidLo", pct(s["acc_mid_lo"]))
+        cmd(f"SimSeed{tag}AccMidHi", pct(s["acc_mid_hi"]))
+        cmd(f"SimSeed{tag}AccSdMax", pct(s["acc_sd_max"]))
+        cmd(f"SimSeed{tag}MaboveOne", s["M_above_one"])
+        cmd(f"SimSeed{tag}UnderLo", f"{s['underest_lo']:.2f}")
+        cmd(f"SimSeed{tag}UnderHi", f"{s['underest_hi']:.2f}")
+        rows = [B[f"{b:.2f}|{fe}"] for b in _bo]
+        for key, mac in (("spearman_M_acc", "Spearman"),
+                         ("spearman_seed_mean", "SpearmanSeed")):
+            v = [r[key] for r in rows]
+            cmd(f"Ball{tag}{mac}Lo", f"{min(v):.2f}")
+            cmd(f"Ball{tag}{mac}Hi", f"{max(v):.2f}")
+        for key, mac in (("acc_mid_lo", "AccMidLo"), ("acc_mid_hi", "AccMidHi")):
+            v = [r[key] for r in rows]
+            cmd(f"Ball{tag}{mac}Min", pct(min(v)))
+            cmd(f"Ball{tag}{mac}Max", pct(max(v)))
+        cmd(f"Ball{tag}UnderLo", f"{min(r['underest_lo'] for r in rows):.2f}")
+        cmd(f"Ball{tag}UnderHi", f"{max(r['underest_hi'] for r in rows):.2f}")
+        cmd(f"Ball{tag}UnderStraddle",
+            sum(1 for r in rows if r["underest_lo"] < 1.0 < r["underest_hi"]))
+    cmd("SimSeedsN", B[f"{_g}|lfes"]["n_seeds"])
+    cmd("BallSeedsN", min(B[k]["n_seeds"] for k in B))
+    cmd("BallOrdersN", len(_bo))
+    cmd("BallOrderLo", f"{min(_bo):.2f}"); cmd("BallOrderHi", f"{max(_bo):.2f}")
 
 # --- CWRU speed range, from the RPM recorded in each file ---------------------
 import scipy.io, cwru

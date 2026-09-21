@@ -116,6 +116,10 @@ def main():
                               rho_M_crosses_one=cross,
                               spearman_M_acc=float(_spearman(np.array(MM), np.array(acc))))
 
+    # optional: the sweep over training seeds and ball defect orders
+    if os.path.exists(os.path.join(RES, "sim_ball_order.json")):
+        S["sim_ball_order"] = _ball_order_summary(load("sim_ball_order.json"))
+
     C = load("controls.json")
     S["controls"] = C
 
@@ -210,6 +214,44 @@ def main():
         json.dump(S, fh, indent=1)
     print("wrote results/summary.json")
     return S
+
+
+def _curve_summary(rows):
+    """Seed-mean curves over rho, and the per-seed spread, for one sweep."""
+    rhos = sorted({r["rho"] for r in rows})
+    seeds = sorted({r["seed"] for r in rows})
+    at = {(r["seed"], r["rho"]): r for r in rows}
+    acc = np.array([[at[s, x]["acc_proto"] for x in rhos] for s in seeds])
+    M = np.array([[at[s, x]["M"] for x in rhos] for s in seeds])
+    dd = np.array([[at[s, x]["delta"] for x in rhos] for s in seeds])
+    dm = np.array([[at[s, x]["delta_means"] for x in rhos] for s in seeds])
+    acc_m, M_m, dd_m, dm_m = acc.mean(0), M.mean(0), dd.mean(0), dm.mean(0)
+    mid = [i for i, x in enumerate(rhos) if 1.0 < x <= 2.0]
+    ratio = [d / m for d, m in zip(dd_m[1:], dm_m[1:]) if m > 1e-6]
+    per_seed = [float(_spearman(M[i], acc[i])) for i in range(len(seeds))]
+    return dict(n_seeds=len(seeds), rhos=rhos,
+                acc=acc_m.tolist(), acc_sd=acc.std(0).tolist(), M=M_m.tolist(),
+                spearman_M_acc=float(_spearman(M_m, acc_m)),
+                spearman_seed=per_seed,
+                spearman_seed_mean=float(np.mean(per_seed)),
+                spearman_seed_sd=float(np.std(per_seed)),
+                spearman_seed_min=float(np.min(per_seed)),
+                spearman_seed_max=float(np.max(per_seed)),
+                acc_mid_lo=float(acc_m[mid].min()), acc_mid_hi=float(acc_m[mid].max()),
+                acc_sd_max=float(acc.std(0).max()),
+                acc_floor=float(acc_m.min()),
+                M_above_one=int(sum(1 for x, m in zip(rhos, M_m) if x > 1.0 and m > 1.0)),
+                underest_lo=float(min(ratio)), underest_hi=float(max(ratio)),
+                underest_med=float(np.median(ratio)))
+
+
+def _ball_order_summary(rows):
+    out = {}
+    for bo in sorted({r["ball_order"] for r in rows}):
+        for fe in sorted({r["front_end"] for r in rows}):
+            sel = [r for r in rows if r["ball_order"] == bo and r["front_end"] == fe]
+            out[f"{bo:.2f}|{fe}"] = _curve_summary(sel)
+    return out
 
 
 def _spearman(a, b):
